@@ -16,5 +16,27 @@ contract('Marketplace', (accounts) => {
             assert.notEqual(address, '');
             assert.notEqual(address, undefined);
         });
+
+        it('has a name', async () => {
+            const name = await marketplaceContract.name();
+            assert.notEqual(name, null);
+            assert.notEqual(name,undefined);
+            assert.notEqual(name, '');
+            assert.equal(name, 'Marketplace');
+        })
     });
+
+    describe('product creation', async () => {
+
+        let product, productCount;
+        beforeEach(async ()=>{
+            product = await marketplaceContract.createProduct();
+            productCount = await marketplaceContract.productCount();
+        });
+
+        it('changes productCount', async () => {
+
+        });
+    });
+
 });
