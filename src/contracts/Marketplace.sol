@@ -43,11 +43,13 @@ contract Marketplace {
     }
 
     function purchaseProduct(uint _id) public payable {
-        require(_id > 0 && _id <= productCount);
+       
         Product memory _product = products[_id]; //copy of product in blockchain storage
         address payable _seller = _product.owner;
-        string memory _name     = _product.name;
-
+        require(_product.id > 0 && _product.id <= productCount);
+        require(msg.value >= _product.price);
+        require(!_product.purchased);
+        require(msg.sender != _seller);
         //Change ownership
         _product.owner  = msg.sender;
         _product.purchased = true;
@@ -55,6 +57,6 @@ contract Marketplace {
         products[_id] = _product;
         //Transfer funds to previous owner
         address(_seller).transfer(msg.value);
-        emit ProductPurchased(productCount,_name,msg.value, msg.sender, true);
+        emit ProductPurchased(productCount,_product.name,msg.value, msg.sender, true);
     }
 }

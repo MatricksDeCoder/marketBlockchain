@@ -93,10 +93,30 @@ contract('Marketplace', (accounts) => {
             assert.equal(event.purchased, true,'Product is Purchased!');
 
             //check that seller receives funds
+            
             let seller1FundsAfter = await web3.eth.getBalance(seller1);
             seller1FundsAfter     = new web3.utils.BN(seller1FundsAfter);
             let price = new web3.utils.BN(prod1_price);
             assert.equal(seller1FundsAfter.toString(),seller1FundsBefore.add(price).toString());
+            
+
+            let price_low = web3.utils.toWei('0.5', 'ether');
+            //Failure product id does not exist
+            await marketplaceContract.purchaseProduct(99,{from:seller1,value:prod1_price}).should
+                                                                                          .be
+                                                                                          .rejected;
+            //Failure buyer has too little ether
+            await marketplaceContract.purchaseProduct(productCount,{from:seller1,value:price_low}).should
+                                                                                          .be
+                                                                                          .rejected;
+            //Failure product is already purchased 
+            await marketplaceContract.purchaseProduct(productCount,{from:seller1,value:prod1_price}).should
+                                                                                          .be
+                                                                                          .rejected;
+            //Failure buyer tries to buy again 
+            await marketplaceContract.purchaseProduct(productCount,{from:buyer1,value:prod1_price}).should
+                                                                                                  .be
+                                                                                                  .rejected
         });
 
        

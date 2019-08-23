@@ -1,49 +1,104 @@
 import React, { Component } from 'react';
-import logo from '../logo.png';
 import './App.css';
+import Web3 from 'web3';
+import Marketplace from '../abis/Marketplace.json';
+import Main from './Main';
+import Navbar from './Navbar';
 
 class App extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      marketplaceContract:'',
+      account: '',
+      products: [],
+      productCount: 0,
+      loading:true
+    }
+    this.createProduct = this.createProduct.bind(this);
+    this.purcahseProduct = this.purchaseProduct.bind(this);
+  }
+
+  createProduct(name, price) {
+    this.setState({ loading: true });
+    this.state.marketplaceContract.methods.createProduct(name, price).send({ from: this.state.account })
+                                                                     .once('receipt', (receipt) => {
+                                                                        this.setState({ loading: false });
+                                                                      });
+  }
+
+  purchaseProduct(productId,price) {
+    this.setState({loading:true});
+    this.state.marketplaceContract.methods.purchaseProduct(productId).send({from:this.state.account, value:price})
+                                                                     .once('receipt', (receipt) => {
+                                                                      this.setState({ loading: false });
+                                                                     });
+  }
+
+  async componentWillMount() {
+    await this.loadWeb3();
+    await this.loadBlockchainData();
+  }
+
+  async loadWeb3() { //connect with Metamask
+
+      if (window.ethereum) {
+          window.web3 = new Web3(window.ethereum);
+          await window.ethereum.enable();
+      } else if (window.web3) {
+          window.web3 = new Web3(window.web3.currentProvider);
+      }
+      else {
+          window.alert("Non-ethereum browser detected! Please install/use Metamask!");
+      }
+
+  }
+
+  async loadBlockchainData() {
+    const web3 = window.web3;
+    const account = await web3.eth.getAccounts();  
+    this.setState({account:account});
+
+    const netId = await web3.eth.net.getId();
+    const netData = Marketplace.networks[netId];
+
+    if(netData) {
+      const marketplaceContract = await web3.eth.Contract(Marketplace.abi,netData.address);
+      this.setState({marketplaceContract: marketplaceContract});
+      const productCount = await marketplaceContract.methods.productCount().call();
+      this.setState({productCount:productCount});
+      //console.log(productCount);
+      for (let i=1; i<=productCount;i++) {
+        const product = await marketplaceContract.methods.product(i).call();
+        this.setState({
+          products: [...this.state.products,product]
+        })
+      }
+      //console.log(this.state.products);
+      this.setState({loading:false});
+    } else {
+      window.alert("Marketplace contract not deployed on that network! Please change network!");
+    }
+    
+  }
+
   render() {
     return (
-      <div>
-        <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-          <a
-            className="navbar-brand col-sm-3 col-md-2 mr-0"
-            href="http://www.dappuniversity.com/bootcamp"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Dapp University
-          </a>
-        </nav>
-        <div className="container-fluid mt-5">
-          <div className="row">
-            <main role="main" className="col-lg-12 d-flex text-center">
-              <div className="content mr-auto ml-auto">
-                <a
-                  href="http://www.dappuniversity.com/bootcamp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img src={logo} className="App-logo" alt="logo" />
-                </a>
-                <h1>Dapp University Starter Kit</h1>
-                <p>
-                  Edit <code>src/components/App.js</code> and save to reload.
-                </p>
-                <a
-                  className="App-link"
-                  href="http://www.dappuniversity.com/bootcamp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  LEARN BLOCKCHAIN <u><b>NOW! </b></u>
-                </a>
-              </div>
-            </main>
-          </div>
-        </div>
-      </div>
+    <div >
+        <Navbar account = {this.state.account} />
+      <div className = 'container mt-5'>
+        <div className = 'row'>
+          <main role='main' className = 'col-lg-12 d-flex'>
+            {this.state.loading ? <div>Loading</div> : <Main 
+                                                            purchaseProduct = {this.purchaseProduct}
+                                                            createProduct = {this.createProduct} 
+                                                            products      = {this.state.products}
+                                                        />}   
+          </main>
+        </div>  
+      </div >
+    </div>
     );
   }
 }
