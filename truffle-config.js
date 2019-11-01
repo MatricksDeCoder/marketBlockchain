@@ -1,5 +1,6 @@
 require('babel-register');
 require('babel-polyfill');
+require('dotenv').config(); //inject environment variables into truffle project
 
 module.exports = {
   networks: {
