@@ -16,8 +16,8 @@ class App extends Component {
       productCount: 0,
       loading:true
     }
-    this.createProduct = this.createProduct.bind(this);
-    this.purcahseProduct = this.purchaseProduct.bind(this);
+    this.createProduct   = this.createProduct.bind(this);
+    this.purchaseProduct = this.purchaseProduct.bind(this);
   }
 
   createProduct(name, price) {
@@ -46,8 +46,9 @@ class App extends Component {
       if (window.ethereum) {
           window.web3 = new Web3(window.ethereum);
           await window.ethereum.enable();
-      } else if (window.web3) {
+      } else if (window.web3) { //Legacy browsers
           window.web3 = new Web3(window.web3.currentProvider);
+          //web3.eth.sendTransaction({});//Accounts always exposed
       }
       else {
           window.alert("Non-ethereum browser detected! Please install/use Metamask!");
@@ -57,9 +58,11 @@ class App extends Component {
 
   async loadBlockchainData() {
     const web3 = window.web3;
-    const account = await web3.eth.getAccounts();  
-    this.setState({account:account});
+    const accounts = await web3.eth.getAccounts(); 
+    //console.log(account);
+    this.setState({account:accounts[0]});
 
+    //Detect network dynamically
     const netId = await web3.eth.net.getId();
     const netData = Marketplace.networks[netId];
 
@@ -70,7 +73,7 @@ class App extends Component {
       this.setState({productCount:productCount});
       //console.log(productCount);
       for (let i=1; i<=productCount;i++) {
-        const product = await marketplaceContract.methods.product(i).call();
+        const product = await marketplaceContract.methods.products(i).call();
         this.setState({
           products: [...this.state.products,product]
         })
@@ -86,7 +89,7 @@ class App extends Component {
   render() {
     return (
     <div >
-        <Navbar account = {this.state.account} />
+      <Navbar account = {this.state.account} />
       <div className = 'container mt-5'>
         <div className = 'row'>
           <main role='main' className = 'col-lg-12 d-flex'>

@@ -5,6 +5,7 @@ class Main extends Component {
   render() {
     return (
       <div id="content">
+      
         <h1>Add Product</h1>
         <form onSubmit={(event) => {
           event.preventDefault();
@@ -34,47 +35,46 @@ class Main extends Component {
         </form>
         <p>&nbsp;</p>
         <h2>Buy Product</h2>
-        <table className="table">
+        <div>
+        <table className="table table-bordered">
           <thead>
             <tr>
               <th scope="col">#</th>
+              <th scope="col">Id</th>
               <th scope="col">Name</th>
               <th scope="col">Price</th>
-              <th scope="col">Owner</th>
               <th scope="col"></th>
             </tr>
           </thead>
-          <tbody id="productList">
-            {this.props.products.map((product,key) => {
-              return (
-                <div>
-                  <tr key = {key}>
-                    <th scope="row">{product.id.toString()}</th>
-                    <td>{product.name}</td>
-                    <td>{window.web3.utils.fromWei(product.price.toString(),'ether')} Eth</td>
-                    <td>{product.owner}</td>
-                    <td>
-                      {!product.purchased ? 
-                        <button 
-                               name = {product.id}
-                               value = {product.price}
-                               className="buyButton"
-                               onClick = {(event) => {
-                                  const id = event.target.name;
-                                  const price = event.target.value;
-                                  this.props.purchaseProduct(id,price);
-                               }}
-                        >Buy
-                        </button> : null
-                      }
-                    </td>
-                  </tr>
-                </div>
-              )
-            })}           
-            
+          <tbody id = "productList">
+          {this.props.products.map((product,key) => {
+            return (
+                <tr key = {key}>
+                  <th scope="row">{product.id.toString()}</th>
+                  <td>{product.name}</td>
+                  <td>{window.web3.utils.fromWei(product.price.toString(),'ether')} Eth</td>
+                  <td>{product.owner}</td>
+                  <td>
+                    {!product.purchased ? 
+                      <button 
+                            name = {product.id}
+                            value = {product.price}
+                            className="buyButton"
+                            onClick = {(event) => {
+                                const id = event.target.name;
+                                const price = event.target.value;
+                                this.props.purchaseProduct(id,price);
+                            }}
+                      >Buy
+                      </button> : null
+                    }
+                  </td>
+                </tr>
+            )
+          })}           
           </tbody>
         </table>
+        </div>        
       </div>
     );
   }

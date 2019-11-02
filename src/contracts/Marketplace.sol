@@ -44,7 +44,7 @@ contract Marketplace {
 
     function purchaseProduct(uint _id) public payable {
        
-        Product memory _product = products[_id]; //copy of product in blockchain storage
+        Product memory _product = products[_id]; //copy in memory of product in blockchain storage
         address payable _seller = _product.owner;
         require(_product.id > 0 && _product.id <= productCount);
         require(msg.value >= _product.price);

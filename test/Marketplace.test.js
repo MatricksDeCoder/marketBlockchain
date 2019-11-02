@@ -4,13 +4,14 @@ require('chai').use(require('chai-as-promised'))
 
 //Implement test within here
 contract('Marketplace', (accounts) => {
-    let marketplaceContract;
+    let marketplaceContract;//deployed smart Contract to be accessible to rest of the test
     let deployer = accounts[0];
-    let seller1   = accounts[1];
+    let seller1  = accounts[1];
     let buyer1   = accounts[2];
     let seller2  = accounts[3];
+    let buyer2   = accounts[4];
 
-    beforeEach(async ()=> {
+    beforeEach(async ()=> {//get deployed copy contract before each of the tests
         marketplaceContract = await Marketplace.deployed();
     });
 
@@ -37,7 +38,7 @@ contract('Marketplace', (accounts) => {
         let product, productCount, productName;
         let prod1_name  = 'Androidbox';
         let prod1_price = web3.utils.toWei('1', 'ether');
-        let prod2_name = 'Applebox';
+        let prod2_name  = 'Applebox';
         let prod2_price = web3.utils.toWei('3', 'ether');
 
         beforeEach(async ()=>{
@@ -56,7 +57,7 @@ contract('Marketplace', (accounts) => {
         });
 
         it('rejects product with no name or price not right', async() => {
-               //FAILURES:
+            //FAILURES:
             //Product must have a name 
             await marketplaceContract.createProduct('',prod1_price,{from:seller1}).should
                                                                                           .be
@@ -102,15 +103,15 @@ contract('Marketplace', (accounts) => {
 
             let price_low = web3.utils.toWei('0.5', 'ether');
             //Failure product id does not exist
-            await marketplaceContract.purchaseProduct(99,{from:seller1,value:prod1_price}).should
+            await marketplaceContract.purchaseProduct(99,{from:buyer2,value:prod1_price}).should
                                                                                           .be
                                                                                           .rejected;
             //Failure buyer has too little ether
-            await marketplaceContract.purchaseProduct(productCount,{from:seller1,value:price_low}).should
+            await marketplaceContract.purchaseProduct(productCount,{from:buyer2,value:price_low}).should
                                                                                           .be
                                                                                           .rejected;
             //Failure product is already purchased 
-            await marketplaceContract.purchaseProduct(productCount,{from:seller1,value:prod1_price}).should
+            await marketplaceContract.purchaseProduct(productCount,{from:seller2,value:prod1_price}).should
                                                                                           .be
                                                                                           .rejected;
             //Failure buyer tries to buy again 
